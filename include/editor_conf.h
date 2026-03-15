@@ -9,10 +9,12 @@ typedef struct
 
 typedef struct
 {
-    int nrows;
-    int ncols;
+    int nrows, ncols;
+
     int nlines;
     Line *lines;
+
+    int cx, cy;
 } EditorConfig;
 
 extern EditorConfig gEC;

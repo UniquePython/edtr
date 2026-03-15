@@ -17,6 +17,8 @@ void configureEditor(void)
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
     gEC.nrows = ws.ws_row;
     gEC.ncols = ws.ws_col;
+    gEC.cx = 0;
+    gEC.cy = 0;
 }
 
 void editorOpen(const char *filename)
