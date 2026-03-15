@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall -Wextra -Wshadow -Wdouble-promotion -Wformat=2 -Wundef -Wconversion -std=c11 -I include
+CFLAGS  = -Wall -Wextra -Wpedantic -std=c11 -I include
 LIBS    =
 
 SRC_DIR   = src
