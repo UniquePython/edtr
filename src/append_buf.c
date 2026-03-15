@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 void abAppend(AppendBuffer *ab, const char *s, int len)
 {

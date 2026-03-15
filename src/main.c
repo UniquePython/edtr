@@ -15,13 +15,20 @@
 #define CUR_SHOW "\x1b[?25h"
 #define CUR_TOP_LEFT "\x1b[H"
 
-EditorConfig gEC;
-
 void drawRows(AppendBuffer *ab)
 {
-    for (int i = 0; i < gEC.rows; i++)
-        if (i < gEC.rows - 1)
-            abAppend(ab, "~" NEXTLINE, 3);
+    for (int i = 0; i < gEC.nrows; i++)
+        if (i < gEC.nrows - 1)
+            if (i < gEC.nlines)
+            {
+                int len = gEC.lines[i].len;
+                if (len > gEC.ncols)
+                    len = gEC.ncols;
+                abAppend(ab, gEC.lines[i].chars, len);
+                abAppend(ab, "\r\n", 2);
+            }
+            else
+                abAppend(ab, "~" NEXTLINE, 3);
         else
             abAppend(ab, "~", 1);
 }
@@ -43,8 +50,14 @@ void refreshScreen(void)
     abFree(&ab);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
+    if (argc != 2)
+    {
+        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
     if (tcgetattr(STDIN_FILENO, &gOrigTerm) != 0)
     {
         perror("tcgetattr: while storing original terminal state in main()");
@@ -61,15 +74,14 @@ int main(void)
 
     enableRawMode();
 
+    editorOpen(argv[1]);
+
     refreshScreen();
 
     char c;
     while (read(STDIN_FILENO, &c, 1) == 1)
-    {
-        printf("%c -> %d" NEXTLINE, c, (int)c);
         if (c == 'q')
             break;
-    }
 
     return EXIT_SUCCESS;
 }

@@ -20,7 +20,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 run: all
-	./$(TARGET)
+	./$(TARGET) $(ARGS)
 
 clean:
 	rm -f $(BUILD_DIR)/*.o $(TARGET)

@@ -1,23 +1,23 @@
 #ifndef EDITOR_CONF_H
 #define EDITOR_CONF_H
 
-#include <unistd.h>
-#include <sys/ioctl.h>
+typedef struct
+{
+    char *chars;
+    int len;
+} Line;
 
 typedef struct
 {
-    int rows;
-    int cols;
+    int nrows;
+    int ncols;
+    int nlines;
+    Line *lines;
 } EditorConfig;
 
 extern EditorConfig gEC;
 
-static inline void configureEditor(void)
-{
-    struct winsize ws;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
-    gEC.rows = ws.ws_row;
-    gEC.cols = ws.ws_col;
-}
+void configureEditor(void);
+void editorOpen(const char *filename);
 
 #endif
