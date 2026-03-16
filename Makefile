@@ -9,7 +9,7 @@ SRCS   = $(wildcard $(SRC_DIR)/*.c)
 OBJS   = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
 TARGET = $(BUILD_DIR)/edtr
 
-.PHONY: all clean run
+.PHONY: all clean run debug
 
 all: $(TARGET)
 
@@ -21,6 +21,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 
 run: all
 	./$(TARGET) $(ARGS)
+
+debug: CFLAGS += -g -O0
+debug: all
+	gdb --args ./$(TARGET) $(ARGS)
 
 clean:
 	rm -f $(BUILD_DIR)/*.o $(TARGET)

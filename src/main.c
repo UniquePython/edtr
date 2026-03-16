@@ -17,6 +17,8 @@ typedef enum
     KEY_RIGHT
 } KEY;
 
+#define CTRL(k) ((k) & 0x1f)
+
 #define NEXTLINE "\r\n"
 #define CLEAR_SCREEN "\x1b[2J"
 #define CUR_HIDE "\x1b[?25l"
@@ -170,16 +172,22 @@ int main(int argc, char **argv)
     refreshScreen();
 
     int key;
-    while ((key = editorReadKey()) != 'q')
+    while (1)
     {
+        key = editorReadKey();
+
         if (key == KEY_UP || key == KEY_DOWN || key == KEY_LEFT || key == KEY_RIGHT)
             editorMoveCursor(key);
         else if (key >= 32 && key < 127)
             editorInsertChar((char)key);
         else if (key == 127)
             editorDeleteChar();
-        else if (key = '\r')
+        else if (key == '\r')
             editorInsertNewline();
+        else if (key == CTRL('s'))
+            editorSave();
+        else if (key == CTRL('q'))
+            break;
 
         refreshScreen();
     }

@@ -28,6 +28,8 @@ void editorOpen(const char *filename)
     if (!file)
         die("fopen: while trying to open file for reading in editorOpen()");
 
+    gEC.filename = filename;
+
     char *line = NULL;
     size_t linesize = 0;
     ssize_t read;
@@ -46,16 +48,61 @@ void editorOpen(const char *filename)
 
     free(line);
     fclose(file);
+
+    if (gEC.nlines == 0)
+        editorInsertLine(0, "", 0);
+}
+
+char *editorRowsToString(int *outlen)
+{
+    int len = 0;
+    for (int i = 0; i < gEC.nlines; i++)
+        len += gEC.lines[i].len + 1;
+
+    char *buffer = malloc(len);
+    int buflen = 0;
+
+    if (!buffer)
+        die("malloc: while allocating buffer in editorRowsToString()");
+
+    for (int i = 0; i < gEC.nlines; i++)
+    {
+        memcpy(buffer + buflen, gEC.lines[i].chars, gEC.lines[i].len);
+        buffer[buflen + gEC.lines[i].len] = '\n';
+        buflen += gEC.lines[i].len + 1;
+    }
+
+    *outlen = buflen;
+
+    return buffer;
+}
+
+void editorSave(void)
+{
+    int buflen;
+    char *buffer = editorRowsToString(&buflen);
+
+    FILE *file = fopen(gEC.filename, "w");
+    if (!file)
+        die("fopen: while opening file for writing in editorSave()");
+
+    fwrite(buffer, 1, buflen, file);
+    fclose(file);
+    free(buffer);
 }
 
 void editorInsertChar(char c)
 {
+    if (gEC.cy >= gEC.nlines)
+        return;
     lineInsertChar(&gEC.lines[gEC.cy], gEC.cx, c);
     gEC.cx++;
 }
 
 void editorDeleteChar(void)
 {
+    if (gEC.cy >= gEC.nlines)
+        return;
     if (gEC.cx != 0 && gEC.cx <= gEC.lines[gEC.cy].len)
     {
         lineDeleteChar(&gEC.lines[gEC.cy], gEC.cx - 1);
@@ -65,6 +112,8 @@ void editorDeleteChar(void)
 
 void editorInsertNewline(void)
 {
+    if (gEC.cy >= gEC.nlines)
+        return;
     Line *currLine = &gEC.lines[gEC.cy];
     char *rest = currLine->chars + gEC.cx;
     int restLen = currLine->len - gEC.cx;

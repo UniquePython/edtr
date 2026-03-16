@@ -11,12 +11,17 @@ typedef struct
     Line *lines;
 
     int cx, cy;
+
+    const char *filename;
 } EditorConfig;
 
 extern EditorConfig gEC;
 
 void configureEditor(void);
 void editorOpen(const char *filename);
+char *editorRowsToString(int *outlen);
+void editorSave(void);
+
 void editorInsertChar(char c);
 void editorDeleteChar();
 

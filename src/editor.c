@@ -16,7 +16,7 @@ void enableRawMode(void)
     }
 
     currTerm.c_lflag &= ~(ECHO | ICANON | ISIG);
-    currTerm.c_iflag &= ~IXON;
+    currTerm.c_iflag &= ~(IXON | ICRNL);
     currTerm.c_oflag &= ~OPOST;
 
     currTerm.c_cc[VMIN] = 1;
