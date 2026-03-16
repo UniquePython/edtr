@@ -1,11 +1,7 @@
 #ifndef EDITOR_CONF_H
 #define EDITOR_CONF_H
 
-typedef struct
-{
-    char *chars;
-    int len;
-} Line;
+#include "line.h"
 
 typedef struct
 {
@@ -21,5 +17,10 @@ extern EditorConfig gEC;
 
 void configureEditor(void);
 void editorOpen(const char *filename);
+void editorInsertChar(char c);
+void editorDeleteChar();
+
+void editorInsertLine(int at, char *chars, int len);
+void editorInsertNewline(void);
 
 #endif

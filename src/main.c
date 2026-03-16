@@ -112,32 +112,28 @@ void editorMoveCursor(int key)
         gEC.cy--;
         if (gEC.cy < 0)
             gEC.cy = 0;
-        if (gEC.cy >= gEC.nrows)
-            gEC.cy = gEC.nrows - 1;
+        if (gEC.cx > gEC.lines[gEC.cy].len)
+            gEC.cx = gEC.lines[gEC.cy].len;
         break;
 
     case KEY_RIGHT:
         gEC.cx++;
-        if (gEC.cx < 0)
-            gEC.cx = 0;
-        if (gEC.cx >= gEC.ncols)
-            gEC.cx = gEC.ncols - 1;
+        if (gEC.cx > gEC.lines[gEC.cy].len)
+            gEC.cx = gEC.lines[gEC.cy].len;
         break;
 
     case KEY_DOWN:
         gEC.cy++;
-        if (gEC.cy < 0)
-            gEC.cy = 0;
-        if (gEC.cy >= gEC.nrows)
-            gEC.cy = gEC.nrows - 1;
+        if (gEC.cy >= gEC.nlines)
+            gEC.cy = gEC.nlines - 1;
+        if (gEC.cx > gEC.lines[gEC.cy].len)
+            gEC.cx = gEC.lines[gEC.cy].len;
         break;
 
     case KEY_LEFT:
         gEC.cx--;
         if (gEC.cx < 0)
             gEC.cx = 0;
-        if (gEC.cx >= gEC.ncols)
-            gEC.cx = gEC.ncols - 1;
         break;
 
     default:
@@ -176,7 +172,15 @@ int main(int argc, char **argv)
     int key;
     while ((key = editorReadKey()) != 'q')
     {
-        editorMoveCursor(key);
+        if (key == KEY_UP || key == KEY_DOWN || key == KEY_LEFT || key == KEY_RIGHT)
+            editorMoveCursor(key);
+        else if (key >= 32 && key < 127)
+            editorInsertChar((char)key);
+        else if (key == 127)
+            editorDeleteChar();
+        else if (key = '\r')
+            editorInsertNewline();
+
         refreshScreen();
     }
 
