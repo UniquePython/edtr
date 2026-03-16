@@ -4,6 +4,7 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <string.h>
+#include <math.h>
 
 #include "editor.h"
 #include "editor_conf.h"
@@ -17,7 +18,7 @@ typedef enum
     KEY_RIGHT
 } KEY;
 
-#define CTRL(k) ((k) & 0x1f)
+#define CTRL_KEY(k) ((k) & 0x1f)
 
 #define NEXTLINE "\r\n"
 #define CLEAR_SCREEN "\x1b[2J"
@@ -25,10 +26,12 @@ typedef enum
 #define CUR_SHOW "\x1b[?25h"
 #define CUR_TOP_LEFT "\x1b[H"
 #define CUR_MOVE "\x1b[%d;%dH"
+#define INV_VIDEO "\x1b[7m"
+#define RESET "\x1b[m"
 
 void drawRows(AppendBuffer *ab)
 {
-    for (int i = 0; i < gEC.nrows; i++)
+    for (int i = 0; i < gEC.nrows - 1; i++)
     {
         int fileRow = gEC.rowOffset + i;
 
@@ -46,9 +49,36 @@ void drawRows(AppendBuffer *ab)
         else
             abAppend(ab, "~", 1);
 
-        if (i < gEC.nrows - 1)
-            abAppend(ab, "\r\n", 2);
+        abAppend(ab, NEXTLINE, strlen(NEXTLINE));
     }
+}
+
+void drawStatusBar(AppendBuffer *ab)
+{
+    abAppend(ab, INV_VIDEO, strlen(INV_VIDEO));
+
+    char *modified = gEC.modified ? "[modified]" : "";
+    int leftlen = strlen(gEC.filename) + 1 + strlen(modified);
+    char *left = malloc(leftlen + 1);
+    snprintf(left, leftlen + 1, "%s %s", gEC.filename, modified);
+
+    int ndigits_lines = gEC.nlines ? log10(gEC.nlines) + 1 : 1;
+    int ndigits_cy_plus_1 = gEC.cy ? log10(gEC.cy + 1) + 1 : 1;
+    int rightlen = ndigits_lines + ndigits_cy_plus_1 + 3;
+    char *right = malloc(rightlen + 1);
+    snprintf(right, rightlen + 1, "%d / %d", gEC.cy + 1, gEC.nlines);
+
+    int padding = gEC.ncols - leftlen - rightlen;
+
+    abAppend(ab, left, leftlen);
+    while (padding--)
+        abAppend(ab, " ", 1);
+    abAppend(ab, right, rightlen);
+
+    abAppend(ab, RESET, strlen(RESET));
+
+    free(left);
+    free(right);
 }
 
 void refreshScreen(void)
@@ -62,8 +92,9 @@ void refreshScreen(void)
     abAppend(&ab, CUR_TOP_LEFT, strlen(CUR_TOP_LEFT));
 
     drawRows(&ab);
+    drawStatusBar(&ab);
 
-    char buf[16];
+    char buf[64];
     snprintf(buf, sizeof(buf), CUR_MOVE, gEC.cy - gEC.rowOffset + 1, gEC.cx - gEC.colOffset + 1);
     abAppend(&ab, buf, strlen(buf));
 
@@ -193,9 +224,9 @@ int main(int argc, char **argv)
             editorDeleteChar();
         else if (key == '\r')
             editorInsertNewline();
-        else if (key == CTRL('s'))
+        else if (key == CTRL_KEY('s'))
             editorSave();
-        else if (key == CTRL('q'))
+        else if (key == CTRL_KEY('q'))
             break;
 
         refreshScreen();

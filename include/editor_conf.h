@@ -3,6 +3,8 @@
 
 #include "line.h"
 
+#include <stdbool.h>
+
 typedef struct
 {
     int nrows, ncols;
@@ -15,6 +17,8 @@ typedef struct
     int rowOffset, colOffset;
 
     const char *filename;
+
+    bool modified;
 } EditorConfig;
 
 extern EditorConfig gEC;

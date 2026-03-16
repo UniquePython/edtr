@@ -1,6 +1,6 @@
 CC      = gcc
 CFLAGS  = -Wall -Wextra -Wpedantic -std=c11 -I include
-LIBS    =
+LIBS    = -lm
 
 SRC_DIR   = src
 BUILD_DIR = build

@@ -20,6 +20,8 @@ void configureEditor(void)
     gEC.ncols = ws.ws_col;
     gEC.cx = 0;
     gEC.cy = 0;
+    gEC.rowOffset = 0;
+    gEC.colOffset = 0;
 }
 
 void editorOpen(const char *filename)
@@ -31,7 +33,7 @@ void editorOpen(const char *filename)
     gEC.filename = filename;
 
     gEC.colOffset = 0;
-    gEC.rowOffset - 0;
+    gEC.rowOffset = 0;
 
     char *line = NULL;
     size_t linesize = 0;
@@ -41,7 +43,7 @@ void editorOpen(const char *filename)
     {
         line[strcspn(line, "\r\n")] = '\0';
 
-        Line text = {strdup(line), strlen(line)};
+        Line text = {strdup(line), (int)strlen(line), (int)strlen(line) + 1};
         text.cap = strlen(line) + 1;
 
         gEC.lines = realloc(gEC.lines, sizeof(Line) * (gEC.nlines + 1));
@@ -92,6 +94,8 @@ void editorSave(void)
     fwrite(buffer, 1, buflen, file);
     fclose(file);
     free(buffer);
+
+    gEC.modified = false;
 }
 
 void editorScroll(void)
@@ -99,8 +103,8 @@ void editorScroll(void)
     if (gEC.cy < gEC.rowOffset)
         gEC.rowOffset = gEC.cy;
 
-    if (gEC.cy >= gEC.rowOffset + gEC.nrows)
-        gEC.rowOffset = gEC.cy - gEC.nrows + 1;
+    if (gEC.cy >= gEC.rowOffset + gEC.nrows - 1)
+        gEC.rowOffset = gEC.cy - gEC.nrows + 2;
 
     if (gEC.cx < gEC.colOffset)
         gEC.colOffset = gEC.cx;
@@ -115,6 +119,8 @@ void editorInsertChar(char c)
         return;
     lineInsertChar(&gEC.lines[gEC.cy], gEC.cx, c);
     gEC.cx++;
+
+    gEC.modified = true;
 }
 
 void editorDeleteChar(void)
@@ -126,6 +132,8 @@ void editorDeleteChar(void)
         lineDeleteChar(&gEC.lines[gEC.cy], gEC.cx - 1);
         gEC.cx--;
     }
+
+    gEC.modified = true;
 }
 
 void editorInsertNewline(void)
@@ -139,6 +147,8 @@ void editorInsertNewline(void)
     editorInsertLine(gEC.cy + 1, rest, restLen);
     gEC.cy++;
     gEC.cx = 0;
+
+    gEC.modified = true;
 }
 
 void editorInsertLine(int at, char *chars, int len)
