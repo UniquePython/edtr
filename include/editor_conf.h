@@ -12,6 +12,8 @@ typedef struct
 
     int cx, cy;
 
+    int rowOffset, colOffset;
+
     const char *filename;
 } EditorConfig;
 
@@ -21,6 +23,8 @@ void configureEditor(void);
 void editorOpen(const char *filename);
 char *editorRowsToString(int *outlen);
 void editorSave(void);
+
+void editorScroll(void);
 
 void editorInsertChar(char c);
 void editorDeleteChar();

@@ -29,23 +29,32 @@ typedef enum
 void drawRows(AppendBuffer *ab)
 {
     for (int i = 0; i < gEC.nrows; i++)
-        if (i < gEC.nrows - 1)
-            if (i < gEC.nlines)
-            {
-                int len = gEC.lines[i].len;
-                if (len > gEC.ncols)
-                    len = gEC.ncols;
-                abAppend(ab, gEC.lines[i].chars, len);
-                abAppend(ab, "\r\n", 2);
-            }
-            else
-                abAppend(ab, "~" NEXTLINE, 3);
+    {
+        int fileRow = gEC.rowOffset + i;
+
+        if (fileRow < gEC.nlines)
+        {
+            int len = gEC.lines[fileRow].len - gEC.colOffset;
+            if (len < 0)
+                len = 0;
+            if (len > gEC.ncols)
+                len = gEC.ncols;
+
+            char *start = gEC.lines[fileRow].chars + gEC.colOffset;
+            abAppend(ab, start, len);
+        }
         else
             abAppend(ab, "~", 1);
+
+        if (i < gEC.nrows - 1)
+            abAppend(ab, "\r\n", 2);
+    }
 }
 
 void refreshScreen(void)
 {
+    editorScroll();
+
     AppendBuffer ab = {NULL, 0};
 
     abAppend(&ab, CLEAR_SCREEN, strlen(CLEAR_SCREEN));
@@ -55,7 +64,7 @@ void refreshScreen(void)
     drawRows(&ab);
 
     char buf[16];
-    snprintf(buf, sizeof(buf), CUR_MOVE, gEC.cy + 1, gEC.cx + 1);
+    snprintf(buf, sizeof(buf), CUR_MOVE, gEC.cy - gEC.rowOffset + 1, gEC.cx - gEC.colOffset + 1);
     abAppend(&ab, buf, strlen(buf));
 
     abAppend(&ab, CUR_SHOW, strlen(CUR_SHOW));

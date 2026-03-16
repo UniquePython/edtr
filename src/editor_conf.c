@@ -30,6 +30,9 @@ void editorOpen(const char *filename)
 
     gEC.filename = filename;
 
+    gEC.colOffset = 0;
+    gEC.rowOffset - 0;
+
     char *line = NULL;
     size_t linesize = 0;
     ssize_t read;
@@ -89,6 +92,21 @@ void editorSave(void)
     fwrite(buffer, 1, buflen, file);
     fclose(file);
     free(buffer);
+}
+
+void editorScroll(void)
+{
+    if (gEC.cy < gEC.rowOffset)
+        gEC.rowOffset = gEC.cy;
+
+    if (gEC.cy >= gEC.rowOffset + gEC.nrows)
+        gEC.rowOffset = gEC.cy - gEC.nrows + 1;
+
+    if (gEC.cx < gEC.colOffset)
+        gEC.colOffset = gEC.cx;
+
+    if (gEC.cx >= gEC.colOffset + gEC.ncols)
+        gEC.colOffset = gEC.cx - gEC.ncols + 1;
 }
 
 void editorInsertChar(char c)
