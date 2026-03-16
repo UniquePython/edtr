@@ -4,7 +4,6 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <string.h>
-#include <math.h>
 
 #include "editor.h"
 #include "editor_conf.h"
@@ -58,20 +57,20 @@ void drawStatusBar(AppendBuffer *ab)
     abAppend(ab, INV_VIDEO, strlen(INV_VIDEO));
 
     char *modified = gEC.modified ? "[modified]" : "";
-    int leftlen = strlen(gEC.filename) + 1 + strlen(modified);
-    char *left = malloc(leftlen + 1);
-    snprintf(left, leftlen + 1, "%s %s", gEC.filename, modified);
 
-    int ndigits_lines = gEC.nlines ? log10(gEC.nlines) + 1 : 1;
-    int ndigits_cy_plus_1 = gEC.cy ? log10(gEC.cy + 1) + 1 : 1;
-    int rightlen = ndigits_lines + ndigits_cy_plus_1 + 3;
+    int leftlen = snprintf(NULL, 0, "%s %s", gEC.filename, modified);
+    int rightlen = snprintf(NULL, 0, "%d / %d", gEC.cy + 1, gEC.nlines);
+
+    char *left = malloc(leftlen + 1);
     char *right = malloc(rightlen + 1);
+
+    snprintf(left, leftlen + 1, "%s %s", gEC.filename, modified);
     snprintf(right, rightlen + 1, "%d / %d", gEC.cy + 1, gEC.nlines);
 
     int padding = gEC.ncols - leftlen - rightlen;
 
     abAppend(ab, left, leftlen);
-    while (padding--)
+    while (padding-- > 0)
         abAppend(ab, " ", 1);
     abAppend(ab, right, rightlen);
 
